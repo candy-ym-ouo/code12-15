@@ -43,6 +43,9 @@ async function handleLogout() {
           <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'timeline' }" to="/">
             时间线
           </router-link>
+          <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'calendar' }" to="/calendar">
+            物候日历
+          </router-link>
           <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'compare' }" to="/compare">
             跨年对比
           </router-link>

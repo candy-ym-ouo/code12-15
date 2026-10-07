@@ -157,6 +157,33 @@ export interface PhenologyResult {
   reason?: "INSUFFICIENT_HISTORY";
 }
 
+export interface CalendarCell {
+  date: string;
+  year: number;
+  month: number;
+  day: number;
+  inMonth: boolean;
+  eventCount: number;
+  observationCount: number;
+  isToday: boolean;
+  isWeekend: boolean;
+}
+
+export interface CalendarResult {
+  year: number;
+  month: number;
+  timezone: string;
+  today: string;
+  grid: { from: string; to: string };
+  cells: CalendarCell[];
+  summary: {
+    activeDays: number;
+    eventCount: number;
+    observationCount: number;
+    duplicateCount: number;
+  };
+}
+
 export interface ShareLink {
   id: string;
   token: string;

@@ -28,6 +28,7 @@ const router = createRouter({
       component: () => import("@/components/AppShell.vue"),
       children: [
         { path: "", name: "timeline", component: () => import("@/views/TimelineView.vue") },
+        { path: "calendar", name: "calendar", component: () => import("@/views/CalendarView.vue") },
         { path: "observations/new", name: "observation-new", component: () => import("@/views/ObservationEditView.vue") },
         { path: "observations/:id", name: "observation-detail", component: () => import("@/views/ObservationDetailView.vue") },
         { path: "observations/:id/edit", name: "observation-edit", component: () => import("@/views/ObservationEditView.vue") },

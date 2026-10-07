@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { observationKindSchema } from "../observations/schema";
 
 const yearSchema = z.coerce.number().int().min(1900).max(2200);
 
@@ -37,7 +38,22 @@ export const overviewQuerySchema = z.object({
   siteId: z.string().min(1).optional(),
 });
 
+export const calendarQuerySchema = z
+  .object({
+    year: yearSchema,
+    month: z.coerce.number().int().min(1).max(12),
+    siteId: z.string().min(1).optional(),
+    speciesId: z.string().min(1).optional(),
+    phenophaseId: z.string().min(1).optional(),
+    kind: observationKindSchema.optional(),
+  })
+  .refine((value) => !(value.phenophaseId && !value.speciesId), {
+    message: "指定物候阶段时必须同时指定物种",
+    path: ["phenophaseId"],
+  });
+
 export type CompareQuery = z.infer<typeof compareQuerySchema>;
 export type PhenologyQuery = z.infer<typeof phenologyQuerySchema>;
 export type WeatherQuery = z.infer<typeof weatherQuerySchema>;
 export type OverviewQuery = z.infer<typeof overviewQuerySchema>;
+export type CalendarQuery = z.infer<typeof calendarQuerySchema>;

@@ -1,5 +1,6 @@
 import { http } from "./client";
 import type {
+  CalendarResult,
   CompareResult,
   Observation,
   ObservationMeta,
@@ -207,8 +208,18 @@ export const statsApi = {
     } }>("/stats/overview", { params });
     return data.data;
   },
-  async weather(params: { siteId: string; monthDay: string; windowDays?: number; year?: number }) {
-    const { data } = await http.get<{ data: {
+  async calendar(params: {
+    year: number;
+    month: number;
+    siteId?: string;
+    speciesId?: string;
+    phenophaseId?: string;
+    kind?: string;
+  }) {
+    const { data } = await http.get<{ data: CalendarResult }>("/stats/calendar", { params });
+    return data.data;
+  },
+  async weather(params: { siteId: string; monthDay: string; windowDays?: number; year?: number }) {    const { data } = await http.get<{ data: {
       baseline: { temperatureC: number | null; yearsUsed: number[]; insufficientBaseline: boolean };
       current: Array<{ id: string; observationDate: string; temperatureC: number | null; deviation: number | null; notes: string | null }>;
       history: Array<{ year: number; temperatureC: number | null }>;

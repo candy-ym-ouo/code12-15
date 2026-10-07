@@ -146,6 +146,49 @@ async function main() {
   check("物候统计返回序列", stats.status === 200 && stats.body?.data?.items?.length >= 2,
     `status=${stats.status}`);
 
+  const calendar = await call(`/stats/calendar?year=2025&month=3&siteId=${siteId}`, { token });
+  const calData = calendar.body?.data;
+  const cal12 = calData?.cells?.find((cell) => cell.date === "2025-03-12");
+  check(
+    "物候日历返回 42 格且 2025-03-12 密度为 1 个事件",
+    calData?.cells?.length === 42 && cal12?.eventCount === 1 && cal12?.observationCount === 1,
+    `cells=${calData?.cells?.length} event=${cal12?.eventCount}`,
+  );
+  check(
+    "日历网格跨月补齐且 3 月恰好 31 个当月格",
+    calData?.grid?.from === "2025-02-24" &&
+      calData?.grid?.to === "2025-04-06" &&
+      calData?.cells?.filter((cell) => cell.inMonth).length === 31,
+  );
+
+  // 同日重复补录（强制放行）后，日历密度仍只落一个事件，但原始条数为 2
+  await call("/observations", {
+    method: "POST",
+    token,
+    body: {
+      siteId,
+      speciesId,
+      phenophaseId: phase?.id,
+      kind: "PLANT_PHENOLOGY",
+      observationDate: "2025-03-12",
+      allowDuplicate: true,
+    },
+  });
+  const calendarAfterDup = await call(`/stats/calendar?year=2025&month=3&siteId=${siteId}`, { token });
+  const cal12After = calendarAfterDup.body?.data?.cells?.find((cell) => cell.date === "2025-03-12");
+  check(
+    "同日重复补录只落一个事件（observationCount=2、eventCount=1）",
+    cal12After?.eventCount === 1 && cal12After?.observationCount === 2,
+    `event=${cal12After?.eventCount} obs=${cal12After?.observationCount}`,
+  );
+
+  const leapCalendar = await call(`/stats/calendar?year=2024&month=2&siteId=${siteId}`, { token });
+  check(
+    "闰年 2 月网格含 29 个当月格且包含 02-29",
+    leapCalendar.body?.data?.cells?.filter((cell) => cell.inMonth).length === 29 &&
+      leapCalendar.body?.data?.cells?.some((cell) => cell.date === "2024-02-29"),
+  );
+
   // 用 arrayBuffer 读取，避免 fetch 的 text() 解码时吞掉 BOM
   const csvResponse = await fetch(`${API}/export/observations?format=csv`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -171,7 +214,7 @@ async function main() {
 
   const anonymous = await fetch(`${API}/share/${share.body?.data?.token}`);
   const anonymousBody = await anonymous.json();
-  check("匿名访问分享页拿到只读数据", anonymous.status === 200 && anonymousBody?.data?.observations?.length === 2,
+  check("匿名访问分享页拿到只读数据", anonymous.status === 200 && anonymousBody?.data?.observations?.length >= 2,
     `status=${anonymous.status}`);
 
   const revoke = await call(`/share-links/${share.body?.data?.id}`, { method: "DELETE", token });
